@@ -44,6 +44,7 @@
 	(cond
 	 ((equal op "display-data") (ewsw-display-cgylr-search-result data))
 	 ((equal op "display-update-result") (ewsw-display-cgylr-update-result data))
+	 ((equal op "display-glgj-deleteyw-result") (ewsw-display-glgj-deleteyw-result data))
 	 )))
 
 (defmacro ewsw-display-data-from-client (&rest body)
@@ -85,10 +86,15 @@ the Text like: tmh: 1912309180293"
   (ewsw-display-data-from-client
    (insert (format "update reuslt: %s\n" data))))
 
+(defun ewsw-display-glgj-deleteyw-result (data)
+  ""
+  (ewsw-display-data-from-client
+   (insert (format "业务删除: %s\n" data))))
+
 
 (defun ewsw-get-current-input ()
   "get current line text as input"
-  (interactive)
+  ; (interactive)
   (let ((input (string-trim-right ; ignore right withspace
 				(thing-at-point 'line))))
 	input))
@@ -117,6 +123,14 @@ the Text like: tmh: 1912309180293"
   "cgylr update_ytb")
 
 
+(defun ewsw-send-delete-yw ()
+  "使用管理工具(glgj.jsp)中的删除业务功能"
+  (interactive)
+  (let ((command (concat "glgj deleteyw " (ewsw-get-current-input))))
+	(ewsw-send-command command)
+	(message "send command to glgj: delete yw")
+	command))
+
 ;;; handler functions
 (defun server-on-open-handler (ws)
   "when client conntect to the server"
@@ -134,8 +148,10 @@ the Text like: tmh: 1912309180293"
 					  :on-close (lambda (ws)
 								  (dolist (client ewsw-ws-clients)
 									(if (equal ws client)
-										(message "find-websocket-success")
-									  (message "find-websocket-failure"))))))))
+										'done
+										; (message "find-websocket-success")
+										; (message "find-websocket-failure")
+									  )))))))
 					 (setq ewsw-ws-server server) ; save the server connection to variable
 					 ))
 

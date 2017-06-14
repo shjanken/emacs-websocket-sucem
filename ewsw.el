@@ -1,25 +1,28 @@
+;;; This is a sucem liberal
 (require 'websocket)
 
-;;; ws server connection
+;;; Code:
+
+;; save the server to list
 (setq ewsw-ws-server nil)
 
 ;;; ws client list
 (setq ewsw-ws-clients nil)
 
 (defmacro when-server-status (condition &rest body)
-  "exec body form when server-status is correct"
+  "Exec body form when server-status is correct.  CONDITION: nothing."
   `(if ,condition
-	   (progn ,@body)))
+       (progn ,@body)))
 
 (defmacro when-server-open (&rest body)
   "exec body form when server is not nil"
   `(when-server-status (not (null ewsw-ws-server))
-					   ,@body))
+                       ,@body))
 
 (defmacro when-server-close (&rest body)
   "execute when server is nil"
   `(when-server-status (null ewsw-ws-server)
-					   ,@body))
+                       ,@body))
 
 ;;; 将一个客户端的 ws 对象存入列表
 (defun add-client-to-list (ws-client)
@@ -29,39 +32,41 @@
 (defun decode-json-string (json-msg)
   "read string from client msg and decode it to assoc list"
   (if (not (stringp json-msg))
-	  json-msg
-	(progn
-	  (require 'json)
-	  (let ((json-key-type 'string))
-		(json-read-from-string json-msg)))))
+      json-msg
+    (progn
+      (require 'json)
+      (let ((json-key-type 'string))
+        (json-read-from-string json-msg)))))
 
 
 (defun client-msg-div (msg)
   "received msg from client and handler it by keyword"
   (let* ((json-list (decode-json-string msg))
-		 (op (assoc-default "op" json-list))
-		 (data (assoc-default "data" json-list)))
-	(cond
-	 ((equal op "display-data") (ewsw-display-cgylr-search-result data))
-	 ((equal op "display-update-result") (ewsw-display-cgylr-update-result data))
-	 ((equal op "display-glgj-deleteyw-result") (ewsw-display-glgj-deleteyw-result data))
-	 )))
+         (op (assoc-default "op" json-list))
+         (data (assoc-default "data" json-list)))
+    (cond
+     ((equal op "display-data") (ewsw-display-cgylr-search-result data))
+     ((equal op "display-update-result") (ewsw-display-cgylr-update-result data))
+     ((equal op "display-glgj-deleteyw-result") (ewsw-display-glgj-deleteyw-result data))
+     )))
 
 (defmacro ewsw-display-data-from-client (&rest body)
   "show the data message"
   `(save-excursion
-	(set-buffer (get-buffer-create "*ewsw*"))
-	(erase-buffer)
-	(insert "\n\n")
-	(display-buffer "*ewsw*")
-	,@body
-	))
+     (set-buffer (get-buffer-create "*ewsw*"))
+     (erase-buffer)
+     (insert (format "author: Shjanken"))
+     (insert (format "janken.wang@hotmail.com"))
+     (insert "\n\n")
+     (display-buffer "*ewsw*")
+     ,@body
+     ))
 
 (defun ewsw-close-ewsw-buffer ()
   "close the *ewsw* buffer"
   (interactive)
   (save-excursion
-	(kill-buffer "*ewsw*")))
+    (kill-buffer "*ewsw*")))
 
 (defun ewsw-insert-data (format-str key value)
   "insert the text to current buffer,
@@ -70,15 +75,15 @@ the Text like: tmh: 1912309180293"
 
 (defun ewsw-display-cgylr-search-result (data)
   (ewsw-display-data-from-client
-   (ewsw-insert-data "\t%s\t%s\t|" "条码号" (assoc-default "tmh" data))
-   (ewsw-insert-data "\t%s\t%s\t\t|" "流水号" (assoc-default "lsh" data))
+   (ewsw-insert-data "\t%s\t%s\n" "条码号" (assoc-default "tmh" data))
+   (ewsw-insert-data "\t%s\t%s\n" "流水号" (assoc-default "lsh" data))
    (ewsw-insert-data "\t%s\t%s\n" "号牌号码" (assoc-default "hphm" data))
-   (ewsw-insert-data "\t%s\t%s\t|" "公安预录入办理状态" (assoc-default "cg_blzt" data))
-   (ewsw-insert-data "\t%s\t%s\t|" "专网办理状态" (assoc-default "zw_blzt" data))
-   (ewsw-insert-data "\t%s\t%s\t\n" "市场网预录入办理状态" (assoc-default "ylr_blzt" data))
+   (ewsw-insert-data "\t%s\t%s\n" "公安预录入办理状态" (assoc-default "zt" data))
+   (ewsw-insert-data "\t%s\t%s\n" "专网办理状态" (assoc-default "zw_blzt" data))
+   (ewsw-insert-data "\t%s\t%s\n" "市场网预录入办理状态" (assoc-default "ylr_blzt" data))
    (let ((cg-ls (assoc-default "cg_ls" data))) ; 如果有公安状态的话，就显示公安状态
-	 (if (> (length cg-ls) 0)
-		 (ewsw-insert-data "\t%s\t%s\n" "公安网办理状态" (aref (assoc-default "cg_ls" data) 0)))))
+     (if (> (length cg-ls) 0)
+         (ewsw-insert-data "\t%s\t%s\n" "公安网办理状态" (aref (assoc-default "cg_ls" data) 0)))))
   data)
 
 (defun ewsw-display-cgylr-update-result (data)
@@ -94,25 +99,25 @@ the Text like: tmh: 1912309180293"
 
 (defun ewsw-get-current-input ()
   "get current line text as input"
-  ; (interactive)
+                                        ; (interactive)
   (let ((input (string-trim-right ; ignore right withspace
-				(thing-at-point 'line))))
-	input))
+                (thing-at-point 'line))))
+    input))
 
 
 (defun ewsw-send-command (command)
   "send command to all clients"
   (dolist (client ewsw-ws-clients)
-	(websocket-send-text client command)))
+    (websocket-send-text client command)))
 
 
 (defun ewsw-send-cgylr-search ()
   "send search cgylr info command"
   (interactive)
   (let ((command (concat "cgylr search " (ewsw-get-current-input))))
-	(ewsw-send-command command)
-	(message "send command to cgylr: search")
-	command))
+    (ewsw-send-command command)
+    (message "send command to cgylr: search")
+    command))
 
 
 (defun ewsw-send-cgylr-update ()
@@ -127,9 +132,9 @@ the Text like: tmh: 1912309180293"
   "使用管理工具(glgj.jsp)中的删除业务功能"
   (interactive)
   (let ((command (concat "glgj deleteyw " (ewsw-get-current-input))))
-	(ewsw-send-command command)
-	(message "send command to glgj: delete yw")
-	command))
+    (ewsw-send-command command)
+    (message "send command to glgj: delete yw")
+    command))
 
 ;;; handler functions
 (defun server-on-open-handler (ws)
@@ -140,20 +145,20 @@ the Text like: tmh: 1912309180293"
 (defun ewsw-start-server ()
   "start the web socket server when the server is not start"
   (let ((server (when-server-close (websocket-server
-					  9988
-					  :host 'local
-					  :on-message (lambda (ws frame)
-									(client-msg-div (websocket-frame-text frame)))
-					  :on-open 'server-on-open-handler
-					  :on-close (lambda (ws)
-								  (dolist (client ewsw-ws-clients)
-									(if (equal ws client)
-										'done
-										; (message "find-websocket-success")
-										; (message "find-websocket-failure")
-									  )))))))
-					 (setq ewsw-ws-server server) ; save the server connection to variable
-					 ))
+                                    9988
+                                    :host 'local
+                                    :on-message (lambda (ws frame)
+                                                  (client-msg-div (websocket-frame-text frame)))
+                                    :on-open 'server-on-open-handler
+                                    :on-close (lambda (ws)
+                                                (dolist (client ewsw-ws-clients)
+                                                  (if (equal ws client)
+                                                      'done
+                                        ; (message "find-websocket-success")
+                                        ; (message "find-websocket-failure")
+                                                    )))))))
+    (setq ewsw-ws-server server) ; save the server connection to variable
+    ))
 
 
 (defun ewsw-close-server ()
@@ -163,7 +168,7 @@ if the server is nil, then do nothing"
    (websocket-server-close ewsw-ws-server)
    (setq ewsw-ws-server nil)
    (dolist (_client ewsw-ws-clients)
-	 (pop ewsw-ws-clients))))
+     (pop ewsw-ws-clients))))
 
 
-(provide 'ewsw) 
+(provide 'ewsw)

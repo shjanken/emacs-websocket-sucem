@@ -1,4 +1,3 @@
-;;; This is a sucem liberal
 (require 'websocket)
 
 ;;; Code:
@@ -56,6 +55,7 @@
      (set-buffer (get-buffer-create "*ewsw*"))
      (erase-buffer)
      (insert (format "author: Shjanken"))
+     (insert "\n")
      (insert (format "janken.wang@hotmail.com"))
      (insert "\n\n")
      (display-buffer "*ewsw*")
@@ -66,6 +66,7 @@
   "close the *ewsw* buffer"
   (interactive)
   (save-excursion
+    (delete-windows-on "*ewsw*")
     (kill-buffer "*ewsw*")))
 
 (defun ewsw-insert-data (format-str key value)
@@ -121,7 +122,7 @@ the Text like: tmh: 1912309180293"
 
 
 (defun ewsw-send-cgylr-update ()
-  "通知网页更新更新 cg_ylr_blzt 和 zs_ylr_blzt"
+  "通知网页更新更新 cg_ylr_blzt 和 zs_ylr_blzt"xcf
   (interactive)
   (ewsw-send-command "cgylr update_ytb")
   (message "send command to cgylr: update_ytb")
@@ -150,13 +151,8 @@ the Text like: tmh: 1912309180293"
                                     :on-message (lambda (ws frame)
                                                   (client-msg-div (websocket-frame-text frame)))
                                     :on-open 'server-on-open-handler
-                                    :on-close (lambda (ws)
-                                                (dolist (client ewsw-ws-clients)
-                                                  (if (equal ws client)
-                                                      'done
-                                        ; (message "find-websocket-success")
-                                        ; (message "find-websocket-failure")
-                                                    )))))))
+                                    :on-close (lambda (_websocket)
+                                                (message "client closed!"))))))
     (setq ewsw-ws-server server) ; save the server connection to variable
     ))
 

@@ -1,5 +1,4 @@
 (require 'websocket)
-
 ;;; Code:
 
 ;; save the server to list
@@ -23,11 +22,11 @@
   `(when-server-status (null ewsw-ws-server)
                        ,@body))
 
+
 ;;; 将一个客户端的 ws 对象存入列表
 (defun add-client-to-list (ws-client)
   "add client to list"
   (push ws ewsw-ws-clients))
-
 (defun decode-json-string (json-msg)
   "read string from client msg and decode it to assoc list"
   (if (not (stringp json-msg))
@@ -122,7 +121,7 @@ the Text like: tmh: 1912309180293"
 
 
 (defun ewsw-send-cgylr-update ()
-  "通知网页更新更新 cg_ylr_blzt 和 zs_ylr_blzt"xcf
+  "通知网页更新更新 cg_ylr_blzt 和 zs_ylr_blzt"
   (interactive)
   (ewsw-send-command "cgylr update_ytb")
   (message "send command to cgylr: update_ytb")
@@ -145,6 +144,7 @@ the Text like: tmh: 1912309180293"
 
 (defun ewsw-start-server ()
   "start the web socket server when the server is not start"
+  (interactive)
   (let ((server (when-server-close (websocket-server
                                     9988
                                     :host 'local

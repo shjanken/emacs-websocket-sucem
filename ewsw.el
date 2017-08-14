@@ -166,5 +166,4 @@ if the server is nil, then do nothing"
    (dolist (_client ewsw-ws-clients)
      (pop ewsw-ws-clients))))
 
-
 (provide 'ewsw)

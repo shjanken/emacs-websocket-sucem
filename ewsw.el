@@ -22,7 +22,7 @@
   `(when-server-status (null ewsw-ws-server)
                        ,@body))
 
-
+ 
 ;;; 将一个客户端的 ws 对象存入列表
 (defun add-client-to-list (ws-client)
   "add client to list"
@@ -46,6 +46,7 @@
      ((equal op "display-data") (ewsw-display-cgylr-search-result data))
      ((equal op "display-update-result") (ewsw-display-cgylr-update-result data))
      ((equal op "display-glgj-deleteyw-result") (ewsw-display-glgj-deleteyw-result data))
+     ((equal op "display-glgj-addH1-result") (ewsw-display-glgj-addH1-result data))
      )))
 
 (defmacro ewsw-display-data-from-client (&rest body)
@@ -96,6 +97,10 @@ the Text like: tmh: 1912309180293"
   (ewsw-display-data-from-client
    (insert (format "业务删除: %s\n" data))))
 
+(defun ewsw-display-glgj-addH1-result (data)
+  (ewsw-display-data-from-client
+   (insert (format "添加退牌业务: %s\n" data))))
+
 
 (defun ewsw-get-current-input ()
   "get current line text as input"
@@ -104,6 +109,11 @@ the Text like: tmh: 1912309180293"
                 (thing-at-point 'line))))
     input))
 
+(defun string-trim-right (string)
+  "Remove trailing whitespace from STRING."
+  (if (string-match "[ \t\n\r]+\\'" string)
+      (replace-match "" t t string)
+    string))
 
 (defun ewsw-send-command (command)
   "send command to all clients"
@@ -134,6 +144,14 @@ the Text like: tmh: 1912309180293"
   (let ((command (concat "glgj deleteyw " (ewsw-get-current-input))))
     (ewsw-send-command command)
     (message "send command to glgj: delete yw")
+    command))
+
+(defun ewsw-send-add-H1 ()
+  "添加退牌业务"
+  (interactive)
+  (let ((command (concat "glgj addH1 " (ewsw-get-current-input))))
+    (ewsw-send-command command)
+    (message "send command to glgj: add h1")
     command))
 
 ;;; handler functions

@@ -22,7 +22,7 @@
   `(when-server-status (null ewsw-ws-server)
                        ,@body))
 
- 
+
 ;;; 将一个客户端的 ws 对象存入列表
 (defun add-client-to-list (ws-client)
   "add client to list"
